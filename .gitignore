@@ -8,9 +8,9 @@
 # END swamp managed section
 
 # Local-only: org-specific definitions and secrets must never be published
-models/
-vaults/
-grants/
-workflows/
-tasks/
+/models/
+/vaults/
+/grants/
+/workflows/
+/tasks/
 .github/hooks/
