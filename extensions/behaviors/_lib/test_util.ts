@@ -32,8 +32,9 @@ export async function withFetch(
   fn: () => Promise<void>,
 ) {
   const original = globalThis.fetch;
-  globalThis.fetch = ((u: string, i?: RequestInit) =>
-    Promise.resolve(impl(String(u), i))) as typeof fetch;
+  globalThis.fetch =
+    ((u: string, i?: RequestInit) =>
+      Promise.resolve(impl(String(u), i))) as typeof fetch;
   try {
     await fn();
   } finally {

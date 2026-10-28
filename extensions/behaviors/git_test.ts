@@ -138,7 +138,9 @@ Deno.test("listPullRequests pages with $skip until a short page", async () => {
   await withFetch((u) => {
     const skip = new URL(u).searchParams.get("$skip")!;
     skips.push(skip);
-    return json({ value: skip === "0" ? [{ pullRequestId: 1 }, { pullRequestId: 2 }] : [] });
+    return json({
+      value: skip === "0" ? [{ pullRequestId: 1 }, { pullRequestId: 2 }] : [],
+    });
   }, async () => {
     await behavior.methods.listPullRequests.execute(
       { status: "active", limit: 2 },

@@ -4,9 +4,8 @@ Full Azure DevOps API coverage: Git, pipelines, work items and more. Built on
 the Azure DevOps REST API v7.2. Works with Azure DevOps Services
 (`dev.azure.com`), legacy `*.visualstudio.com` URLs and Server/on-prem.
 
-**Phase 1 (this release):** `core`, `git`, `build`, `pipelines`.
-Planned: Work Item Tracking, Release, Test, Artifacts, Graph, Security, Wiki,
-Dashboards, Service Hooks.
+**Coverage:** Core, Git, Build, Pipelines, Work Item Tracking, Release, Test,
+Artifacts, Graph, Security, Wiki, Dashboards and Service Hooks.
 
 ## Types
 
@@ -16,6 +15,19 @@ Dashboards, Service Hooks.
 | `@adamchubbuck/azure-devops/git` | Repos, branches, refs, commits, pushes, pull requests, threads, reviewers, votes, branch policies |
 | `@adamchubbuck/azure-devops/build` | Build definitions, builds, logs, artifacts |
 | `@adamchubbuck/azure-devops/pipelines` | Pipelines, runs, run logs |
+| `@adamchubbuck/azure-devops/workitems` | Work items, WIQL, queries, types, fields, comments, revisions, links, areas, iterations, tags |
+| `@adamchubbuck/azure-devops/test` | Test plans, suites, cases, points, runs, results, code coverage |
+| `@adamchubbuck/azure-devops/release` | Classic release definitions, releases, deployments, approvals, logs |
+| `@adamchubbuck/azure-devops/artifacts` | Feeds, packages, versions, views, permissions, retention, build artifacts |
+| `@adamchubbuck/azure-devops/graph` | Users, groups, memberships, descriptors, identity search |
+| `@adamchubbuck/azure-devops/security` | Security namespaces, ACLs and ACEs, permission checks |
+| `@adamchubbuck/azure-devops/wiki` | Wikis, pages (ETag-aware updates), page stats |
+| `@adamchubbuck/azure-devops/dashboards` | Team dashboards and widgets |
+| `@adamchubbuck/azure-devops/servicehooks` | Publishers, consumers, subscriptions, notifications |
+
+Release, Artifacts and Graph use separate service hosts (`vsrm`, `feeds`,
+`vssps`); these are derived automatically for `dev.azure.com` and
+`visualstudio.com` URLs. On Server/on-prem the collection URL is used as-is.
 
 ## Global arguments (every type)
 
@@ -58,7 +70,16 @@ Destructive methods are never run by default. They take `confirm: boolean`
 `core`: `deleteProject`, `deleteTeam`. `git`: `deleteRepository`,
 `deleteBranch`, `forceUpdateBranch`, `abandonPullRequest`,
 `completePullRequest`, `removeReviewer`. `build`: `deleteDefinition`,
-`queueBuild`, `cancelBuild`. `pipelines`: `runPipeline`.
+`queueBuild`, `cancelBuild`. `pipelines`: `runPipeline`. `workitems`:
+`deleteWorkItem`, `removeLink`. `release`: `createRelease`,
+`updateReleaseEnvironment`, `startDeployment`, `updateApproval`,
+`abandonRelease`, `deleteDefinition`. `artifacts`: `createFeed`, `deleteFeed`,
+`deletePackageVersion`, `promotePackageVersion`. `graph`: `createGroup`,
+`deleteGroup`, `addMembership`, `removeMembership`. `security`:
+`setAccessControlEntries`, `removeAccessControlEntries`. `wiki`: `createWiki`,
+`deleteWiki`, `createOrUpdatePage`, `deletePage`. `dashboards`: every
+create/update/delete method. `servicehooks`: `createSubscription`,
+`replaceSubscription`, `deleteSubscription`, `testSubscription`.
 
 `createPush` never force-pushes; it fails if the branch moved.
 

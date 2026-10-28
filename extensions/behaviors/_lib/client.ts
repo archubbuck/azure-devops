@@ -51,6 +51,8 @@ export interface RequestOptions {
   /** Endpoint is preview-only; value is the preview revision, e.g. 1. */
   preview?: number;
   contentType?: string;
+  /** Extra request headers, e.g. If-Match for wiki page updates. */
+  headers?: Record<string, string>;
   /** Return the raw text body instead of parsing JSON. */
   text?: boolean;
 }
@@ -58,6 +60,7 @@ export interface RequestOptions {
 export interface AdoResponse<T> {
   data: T;
   continuationToken?: string;
+  etag?: string;
 }
 
 export interface ListResult<T> {
@@ -78,6 +81,27 @@ export function resolveBaseUrl(g: GlobalArgs): string {
   );
 }
 
+/**
+ * Base URL for APIs hosted on a separate service host: "vsrm" (Release),
+ * "feeds" (Artifacts) or "vssps" (Graph/identities). Works for dev.azure.com
+ * and legacy visualstudio.com; on-prem Server URLs are returned unchanged.
+ */
+export function serviceBaseUrl(
+  g: GlobalArgs,
+  service: "vsrm" | "feeds" | "vssps",
+): string {
+  const base = resolveBaseUrl(g);
+  const u = new URL(base);
+  if (u.hostname === "dev.azure.com") {
+    return `${u.protocol}//${service}.dev.azure.com${u.pathname}`;
+  }
+  if (u.hostname.endsWith(".visualstudio.com")) {
+    const org = u.hostname.slice(0, -".visualstudio.com".length);
+    return `${u.protocol}//${org}.${service}.visualstudio.com${u.pathname}`;
+  }
+  return base;
+}
+
 export function resolveApiVersion(g: GlobalArgs, preview?: number): string {
   const v = g.apiVersion || "7.2";
   if (v.includes("-preview")) return v;
@@ -90,6 +114,11 @@ export class AdoClient {
 
   constructor(private g: GlobalArgs) {
     if (!g.token) throw new Error("A token is required (PAT or bearer).");
+  }
+
+  /** The resolved global arguments this client was built with. */
+  get globals(): GlobalArgs {
+    return this.g;
   }
 
   private authHeader(): string {
@@ -159,6 +188,7 @@ export class AdoClient {
     const headers: Record<string, string> = {
       Authorization: this.authHeader(),
       Accept: "application/json",
+      ...opts.headers,
     };
     let body: string | undefined;
     if (opts.body !== undefined) {
@@ -187,11 +217,14 @@ export class AdoClient {
       if (res.ok) {
         const continuationToken = res.headers.get("x-ms-continuationtoken") ??
           undefined;
+        const etag = res.headers.get("etag") ?? undefined;
         const raw = await res.text();
-        if (opts.text) return { data: raw as unknown as T, continuationToken };
-        if (!raw) return { data: undefined as T, continuationToken };
+        if (opts.text) {
+          return { data: raw as unknown as T, continuationToken, etag };
+        }
+        if (!raw) return { data: undefined as T, continuationToken, etag };
         try {
-          return { data: JSON.parse(raw) as T, continuationToken };
+          return { data: JSON.parse(raw) as T, continuationToken, etag };
         } catch {
           throw new AdoError(
             `Expected JSON from ${method} ${

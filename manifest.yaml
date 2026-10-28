@@ -9,6 +9,15 @@ behaviors:
   - git.ts
   - build.ts
   - pipelines.ts
+  - workitems.ts
+  - test.ts
+  - release.ts
+  - artifacts.ts
+  - graph.ts
+  - security.ts
+  - wiki.ts
+  - dashboards.ts
+  - servicehooks.ts
 additionalFiles:
   - README.md
   - LICENSE
@@ -19,3 +28,8 @@ labels:
   - pipelines
   - build
   - ci-cd
+  - work-items
+  - release
+  - artifacts
+  - wiki
+  - service-hooks

@@ -4,6 +4,7 @@ import {
   GlobalArgsSchema,
   instanceName,
   requireConfirm,
+  serviceBaseUrl,
 } from "./client.ts";
 
 function assert(cond: unknown, msg = "assertion failed"): asserts cond {
@@ -29,8 +30,9 @@ async function withFetch(
   fn: () => Promise<void>,
 ) {
   const original = globalThis.fetch;
-  globalThis.fetch = ((u: string, i?: RequestInit) =>
-    Promise.resolve(impl(String(u), i))) as typeof fetch;
+  globalThis.fetch =
+    ((u: string, i?: RequestInit) =>
+      Promise.resolve(impl(String(u), i))) as typeof fetch;
   try {
     await fn();
   } finally {
@@ -163,9 +165,9 @@ Deno.test("falls back to -preview once when the server requires it", async () =>
   await withFetch((u) => {
     const v = new URL(u).searchParams.get("api-version")!;
     versions.push(v);
-    return v.includes("preview")
-      ? json({ value: [] })
-      : json({ message: 'The requested version "7.2" of the resource is under preview.' }, { status: 400 });
+    return v.includes("preview") ? json({ value: [] }) : json({
+      message: 'The requested version "7.2" of the resource is under preview.',
+    }, { status: 400 });
   }, async () => {
     const c = mkClient();
     await c.get("a");
@@ -187,6 +189,23 @@ Deno.test("requireConfirm blocks by default", () => {
 
 Deno.test("instanceName is Windows-safe", () => {
   eq(instanceName("pr", "feature/x:y"), "pr-feature_x_y");
+});
+
+Deno.test("serviceBaseUrl maps hosts for cloud, legacy and on-prem", () => {
+  const g = (over: Record<string, unknown>) =>
+    GlobalArgsSchema.parse({ token: "t", ...over });
+  eq(
+    serviceBaseUrl(g({ organization: "my-org" }), "vsrm"),
+    "https://vsrm.dev.azure.com/my-org",
+  );
+  eq(
+    serviceBaseUrl(g({ baseUrl: "https://my-org.visualstudio.com" }), "feeds"),
+    "https://my-org.feeds.visualstudio.com/",
+  );
+  eq(
+    serviceBaseUrl(g({ baseUrl: "https://ado.example.com/tfs/Coll" }), "vssps"),
+    "https://ado.example.com/tfs/Coll",
+  );
 });
 
 Deno.test("requires org or baseUrl", () => {
