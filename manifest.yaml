@@ -4,7 +4,7 @@ version: "2026.10.28.1"
 license: MIT
 repository: "https://github.com/archubbuck/azure-devops"
 description: "Full Azure DevOps API coverage: Git, pipelines, work items and more. Works with Azure DevOps Services, legacy visualstudio.com URLs and Server/on-prem."
-behaviors:
+models:
   - core.ts
   - git.ts
   - build.ts
